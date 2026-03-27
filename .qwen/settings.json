@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(g++ *)",
+      "Bash(./inx)",
+      "Bash(/home/lunex/dev/inx/main)",
+      "Bash(make *)",
+      "Bash(make)",
+      "Bash(./main)"
+    ]
+  },
+  "$version": 3
+}
