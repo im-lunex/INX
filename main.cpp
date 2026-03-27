@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <dirent.h>
@@ -10,7 +11,6 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 #include <vector>
-#include <cmath>
 
 // Minimal color palette
 namespace Colors {
@@ -209,30 +209,26 @@ std::string getTerminal() {
 }
 
 std::string shortenGPU(std::string gpu) {
-	// Try to find content in brackets, usually the most descriptive
 	size_t lastOpen = gpu.rfind('[');
 	size_t lastClose = gpu.rfind(']');
-	if (lastOpen != std::string::npos && lastClose != std::string::npos && lastClose > lastOpen) {
+	if (lastOpen != std::string::npos && lastClose != std::string::npos &&
+		lastClose > lastOpen) {
 		gpu = gpu.substr(lastOpen + 1, lastClose - lastOpen - 1);
 	}
 
-	// If it contains a slash, it often lists multiple names for the same chip, take the first
 	size_t slash = gpu.find('/');
 	if (slash != std::string::npos) {
 		gpu = gpu.substr(0, slash);
 	}
 
-	// Remove common suffixes
-	std::vector<std::string> removeList = {
-		"Corporation",
-		"Graphics Controller",
-		"Integrated Graphics Controller",
-		"Series",
-		"LHR",
-		"Lite Hash Rate"
-	};
+	std::vector<std::string> removeList = {"Corporation",
+										   "Graphics Controller",
+										   "Integrated Graphics Controller",
+										   "Series",
+										   "LHR",
+										   "Lite Hash Rate"};
 
-	for (const auto& s : removeList) {
+	for (const auto &s : removeList) {
 		size_t pos = std::string::npos;
 		while ((pos = gpu.find(s)) != std::string::npos) {
 			gpu.erase(pos, s.length());
@@ -245,7 +241,6 @@ std::string shortenGPU(std::string gpu) {
 		gpu = gpu.substr(0, rev);
 	}
 
-	// Clean up extra spaces
 	gpu.erase(0, gpu.find_first_not_of(" \t"));
 	gpu.erase(gpu.find_last_not_of(" \t\n\r") + 1);
 
@@ -253,25 +248,22 @@ std::string shortenGPU(std::string gpu) {
 }
 
 std::string shortenCPU(std::string cpu) {
-	std::vector<std::string> removeList = {
-		"with Radeon Graphics",
-		"with Intel Graphics",
-		"Processor",
-		"CPU",
-		" @ ",
-		"(TM)",
-		"(R)",
-		"  "
-	};
+	std::vector<std::string> removeList = {"with Radeon Graphics",
+										   "with Intel Graphics",
+										   "Processor",
+										   "CPU",
+										   " @ ",
+										   "(TM)",
+										   "(R)",
+										   "  "};
 
-	for (const auto& s : removeList) {
+	for (const auto &s : removeList) {
 		size_t pos = std::string::npos;
 		while ((pos = cpu.find(s)) != std::string::npos) {
 			cpu.erase(pos, s.length());
 		}
 	}
 
-	// Remove extra core info if it's too long
 	size_t paren = cpu.find('(');
 	if (paren != std::string::npos && cpu.length() > 30) {
 		cpu = cpu.substr(0, paren);
@@ -303,9 +295,12 @@ std::string getGPU() {
 		if (render.good()) {
 			std::string vendor;
 			render >> vendor;
-			if (vendor == "0x10de") gpu = "NVIDIA GPU";
-			else if (vendor == "0x8086") gpu = "Intel GPU";
-			else if (vendor == "0x1002") gpu = "AMD GPU";
+			if (vendor == "0x10de")
+				gpu = "NVIDIA GPU";
+			else if (vendor == "0x8086")
+				gpu = "Intel GPU";
+			else if (vendor == "0x1002")
+				gpu = "AMD GPU";
 		}
 	}
 
@@ -445,7 +440,6 @@ std::string getWM() {
 	return "Unknown";
 }
 
-// Simple ASCII art logo
 std::string getAsciiArt() {
 	return R"(
     ╔════════════════════════════╗
@@ -455,13 +449,13 @@ std::string getAsciiArt() {
    )";
 }
 
-// Simple separator
 void printSeparator() {
-	std::cout << "    " << Colors::DIM << "──────────────────────────────────────────────────" << Colors::RESET << std::endl;
+	std::cout << "    " << Colors::DIM
+			  << "──────────────────────────────────────────────────"
+			  << Colors::RESET << std::endl;
 }
 
 int main() {
-	// Gather all system information
 	std::string os = getOSName();
 	std::string kernel = getKernelVersion();
 	std::string hostname = getHostname();
@@ -475,22 +469,25 @@ int main() {
 	std::string wm = getWM();
 	int memoryPercent = getMemoryPercentage();
 
-	const char* user = getenv("USER");
+	const char *user = getenv("USER");
 	std::string username = user ? user : "user";
 
 	std::cout << std::endl;
 
-	// Minimal Header
-	std::cout << "    " << Colors::CYAN << Colors::BOLD << username << Colors::RESET 
-			  << Colors::DIM << "@" << Colors::RESET 
-			  << Colors::CYAN << Colors::BOLD << hostname << Colors::RESET << std::endl;
-	
-	std::cout << "    " << Colors::DIM << "────────────────────────────────────────────" << Colors::RESET << std::endl;
+	std::cout << "    " << Colors::CYAN << Colors::BOLD << username
+			  << Colors::RESET << Colors::DIM << "@" << Colors::RESET
+			  << Colors::CYAN << Colors::BOLD << hostname << Colors::RESET
+			  << std::endl;
+
+	std::cout << "    " << Colors::DIM
+			  << "────────────────────────────────────────────" << Colors::RESET
+			  << std::endl;
 
 	// Info rows with fixed label width
-	auto printRow = [](const std::string& label, const std::string& value) {
-		std::cout << "    " << Colors::CYAN << std::left << std::setw(12) << label << Colors::RESET 
-				  << Colors::DIM << "│ " << Colors::RESET << value << std::endl;
+	auto printRow = [](const std::string &label, const std::string &value) {
+		std::cout << "    " << Colors::CYAN << std::left << std::setw(12)
+				  << label << Colors::RESET << Colors::DIM << "│ "
+				  << Colors::RESET << value << std::endl;
 	};
 
 	printRow("OS", os);
@@ -504,15 +501,20 @@ int main() {
 	printRow("GPU", gpu);
 	printRow("Memory", memory);
 
-	// Memory Bar
-	std::cout << "    " << Colors::DIM << "────────────┴───────────────────────────────" << Colors::RESET << std::endl;
-	std::cout << "    " << Colors::CYAN << std::left << std::setw(12) << "Usage" << Colors::RESET << Colors::DIM << "│ " << Colors::RESET;
-	
+	std::cout << "    " << Colors::DIM
+			  << "────────────┴───────────────────────────────" << Colors::RESET
+			  << std::endl;
+	std::cout << "    " << Colors::CYAN << std::left << std::setw(12) << "Usage"
+			  << Colors::RESET << Colors::DIM << "│ " << Colors::RESET;
+
 	int barWidth = 30;
 	int filled = (memoryPercent * barWidth) / 100;
-	for (int i = 0; i < filled; i++) std::cout << Colors::CYAN << "■" << Colors::RESET;
-	for (int i = 0; i < (barWidth - filled); i++) std::cout << Colors::DIM << "·" << Colors::RESET;
-	std::cout << " " << Colors::BOLD << memoryPercent << "%" << Colors::RESET << std::endl;
+	for (int i = 0; i < filled; i++)
+		std::cout << Colors::CYAN << "■" << Colors::RESET;
+	for (int i = 0; i < (barWidth - filled); i++)
+		std::cout << Colors::DIM << "·" << Colors::RESET;
+	std::cout << " " << Colors::BOLD << memoryPercent << "%" << Colors::RESET
+			  << std::endl;
 
 	std::cout << std::endl;
 	return 0;
